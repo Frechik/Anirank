@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>AniRank — 50+ аниме, Аниме дня, ответы на отзывы</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="theme-dark">
+<div class="container">
+    <div class="header">
+        <div class="logo-area">
+            <div class="logo">
+                <img class="logo-dark" src="https://i.imgur.com/GdAbxBB.png" alt="Логотип тёмная тема">
+                <img class="logo-light" src="https://i.imgur.com/LOUhjFe.png" alt="Логотип светлая тема" style="display:none;">
+                <img class="logo-pink" src="https://i.imgur.com/I8DKkZX.png" alt="Логотип розовая тема" style="display:none;">
+            </div>
+            <div class="expert-badge">🏆 expert2357 - Работник месяца</div>
+        </div>
+        <div style="display: flex; gap: 1rem; align-items: center; flex-wrap: wrap;">
+            <div class="theme-switcher">
+                <button class="theme-btn" data-theme="dark">🌙</button>
+                <button class="theme-btn" data-theme="light">☀️</button>
+                <button class="theme-btn" data-theme="pink">🌸</button>
+            </div>
+            <div class="user-area" id="userArea">
+                <div class="user-greeting" id="userGreeting">Гость</div>
+                <button id="adminPanelBtn" class="admin-btn" style="display:none;">👑 Админ-панель</button>
+                <button id="authModalBtn" class="auth-btn">Войти / Регистрация</button>
+                <button id="logoutBtn" class="logout-btn" style="display:none;">Выйти</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Блок Аниме дня -->
+    <div id="animeOfDayContainer" class="anime-of-day" style="cursor:pointer;"></div>
+
+    <div class="controls">
+        <div class="control-group"><label>🔎 ПОИСК</label><input type="text" id="searchInput" placeholder="Название аниме"></div>
+        <div class="control-group"><label>🎭 ЖАНР</label><select id="genreFilter"><option value="all">Все жанры</option></select></div>
+        <div class="control-group"><label>🔞 ВОЗРАСТ</label><select id="ageFilter"><option value="all">Любой возраст</option><option value="G">G (0+)</option><option value="PG">PG (12+)</option><option value="R">R (17+)</option></select></div>
+        <div class="control-group"><label>📊 СОРТИРОВКА</label><select id="sortSelect"><option value="rating">⭐ По рейтингу</option><option value="title">🔤 По названию</option><option value="year">📅 По году</option></select></div>
+        <div class="control-group"><button id="resetFilters" class="reset-btn">⟳ Сбросить всё</button></div>
+    </div>
+    <div class="result-info"><div class="found-count" id="resultCount"></div><div class="found-count" id="activeFiltersHint"></div></div>
+    <div id="animeGridContainer" class="anime-grid"></div>
+    <footer>
+    🎬 «Рейтинги не врут, но иногда обижают» <br>
+    Сделано с душой, <strong style="color: var(--accent-gold);">expert2357</strong> — работник месяца на все времена. Спасибо, что с нами.
+</footer>
+</div>
+
+<!-- Модалки -->
+<div id="authModal" class="modal"><div class="modal-content"><div class="modal-close" id="closeAuthModal">✕</div><h3 id="authTitle">Вход</h3>
+    <div id="authFormContainer"><div class="form-group"><input type="text" id="loginUsername" placeholder="Имя пользователя"></div><div class="form-group"><input type="password" id="loginPassword" placeholder="Пароль"></div><button id="doLoginBtn" class="btn-primary">Войти</button><p style="margin:1rem 0; text-align:center;"><button id="switchToRegister" style="background:none; border:none; color:var(--accent-teal); cursor:pointer;">Зарегистрироваться</button></p><div id="authError" class="error-msg"></div></div>
+    <div id="regFormContainer" style="display:none;"><div class="form-group"><input type="text" id="regUsername" placeholder="Имя пользователя"></div><div class="form-group"><input type="password" id="regPassword" placeholder="Пароль (мин 8, буквы+цифры)"></div><button id="doRegisterBtn" class="btn-primary">Зарегистрироваться</button><p style="margin:1rem 0; text-align:center;"><button id="switchToLogin" style="background:none; border:none; color:var(--accent-teal); cursor:pointer;">← Назад</button></p><div id="regError" class="error-msg"></div></div>
+</div></div>
+
+<div id="animeModal" class="modal"><div class="modal-content" id="animeModalContent"><div class="modal-close" id="closeAnimeModal">✕</div><div id="animeDetailInner"></div><div id="trailerContainer" class="trailer-container" style="display:none;"></div><div id="reviewSection"></div><div id="recommendSection" class="recommendations"></div><div id="addReviewBlock"></div></div></div>
+
+<div id="adminModal" class="modal"><div class="modal-content" style="max-width: 800px;"><div class="modal-close" id="closeAdminModal">✕</div><h2>👑 Админ-панель</h2>
+    <div style="margin: 1rem 0;"><button id="showUsersTab" class="btn-primary" style="width:auto; margin-right:1rem;">📋 Пользователи</button><button id="showComplaintsTab" class="btn-primary" style="width:auto;">⚠️ Жалобы</button></div>
+    <div id="adminUsersList"></div><div id="adminComplaintsList" style="display:none;"></div>
+</div></div>
+
+<script src="data.js"></script>
+<script src="script.js"></script>
+</body>
+</html>
