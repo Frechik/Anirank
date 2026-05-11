@@ -530,3 +530,203 @@ initAdmin();
 updateUI(); 
 renderAnimeList(); 
 renderAnimeOfDay();
+// ==================== ЭКСПОРТ/ИМПОРТ БАЗЫ ДАННЫХ ====================
+
+// Экспорт всех данных в JSON файл
+function exportDatabase() {
+    const data = {
+        users: users,
+        reviews: reviews,
+        complaints: complaints,
+        bannedUsers: bannedUsers,
+        replies: replies,
+        currentUser: currentUser,
+        version: '1.0',
+        exportDate: new Date().toISOString()
+    };
+    
+    const dataStr = JSON.stringify(data, null, 2);
+    const blob = new Blob([dataStr], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `anirank_backup_${new Date().toISOString().slice(0,19).replace(/:/g, '-')}.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    
+    alert('✅ База данных сохранена в файл');
+}
+
+// Импорт данных из JSON файла
+function importDatabase(file) {
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        try {
+            const data = JSON.parse(e.target.result);
+            
+            // Восстанавливаем данные
+            users = data.users || [];
+            reviews = data.reviews || [];
+            complaints = data.complaints || [];
+            bannedUsers = data.bannedUsers || [];
+            replies = data.replies || [];
+            
+            // Сохраняем в localStorage
+            saveUsers();
+            saveReviews();
+            saveComplaints();
+            saveBanned();
+            saveReplies();
+            
+            // Восстанавливаем текущего пользователя
+            if (data.currentUser) {
+                currentUser = data.currentUser;
+                localStorage.setItem('anirank_currentUser', currentUser);
+            } else {
+                currentUser = null;
+                localStorage.removeItem('anirank_currentUser');
+            }
+            
+            updateUI();
+            renderAnimeList();
+            renderAnimeOfDay();
+            alert('✅ База данных успешно загружена');
+            
+            // Перезагружаем страницу для полного обновления
+            setTimeout(() => location.reload(), 500);
+        } catch (err) {
+            alert('❌ Ошибка при загрузке файла: неверный формат');
+        }
+    };
+    reader.readAsText(file);
+}
+
+// Добавляем кнопки в админ-панель
+function addDatabaseButtonsToAdmin() {
+    const adminModal = document.getElementById('adminModal');
+    if (!adminModal) return;
+    
+    // Ждём появления содержимого
+    setTimeout(() => {
+        const modalContent = adminModal.querySelector('.modal-content');
+        if (!modalContent) return;
+        
+        // Проверяем, не добавлены ли уже кнопки
+        if (document.getElementById('dbExportBtn')) return;
+        
+        const buttonContainer = document.createElement('div');
+        buttonContainer.style.marginTop = '1rem';
+        buttonContainer.style.paddingTop = '1rem';
+        buttonContainer.style.borderTop = '1px solid var(--border-light)';
+        buttonContainer.style.display = 'flex';
+        buttonContainer.style.gap = '1rem';
+        buttonContainer.style.flexWrap = 'wrap';
+        
+        const exportBtn = document.createElement('button');
+        exportBtn.id = 'dbExportBtn';
+        exportBtn.className = 'btn-primary';
+        exportBtn.style.width = 'auto';
+        exportBtn.style.background = 'var(--accent-teal)';
+        exportBtn.innerHTML = '💾 Сохранить базу данных';
+        exportBtn.onclick = exportDatabase;
+        
+        const importBtn = document.createElement('button');
+        importBtn.id = 'dbImportBtn';
+        importBtn.className = 'btn-primary';
+        importBtn.style.width = 'auto';
+        importBtn.innerHTML = '📂 Загрузить базу данных';
+        
+        const fileInput = document.createElement('input');
+        fileInput.type = 'file';
+        fileInput.style.display = 'none';
+        fileInput.accept = 'application/json';
+        fileInput.onchange = (e) => {
+            if (e.target.files.length > 0) {
+                importDatabase(e.target.files[0]);
+            }
+            fileInput.value = '';
+        };
+        importBtn.onclick = () => fileInput.click();
+        
+        buttonContainer.appendChild(exportBtn);
+        buttonContainer.appendChild(importBtn);
+        buttonContainer.appendChild(fileInput);
+        
+        // Вставляем в конец модального окна
+        modalContent.appendChild(buttonContainer);
+    }, 100);
+}
+
+// Добавляем кнопки в футер сайта
+function addDatabaseButtonsToFooter() {
+    const footer = document.querySelector('footer');
+    if (!footer) return;
+    
+    // Проверяем, не добавлены ли уже кнопки
+    if (document.getElementById('footerBackupLink')) return;
+    
+    const backupDiv = document.createElement('div');
+    backupDiv.id = 'footerBackupLink';
+    backupDiv.style.marginTop = '0.8rem';
+    backupDiv.style.paddingTop = '0.5rem';
+    backupDiv.style.borderTop = '1px solid var(--border-light)';
+    backupDiv.style.fontSize = '0.75rem';
+    backupDiv.innerHTML = `
+        <span style="cursor:pointer; color: var(--accent-teal);" onclick="exportDatabase()">💾 Сохранить копию данных</span>
+        &nbsp;|&nbsp;
+        <span style="cursor:pointer; color: var(--accent-teal);" id="importDataLink">📂 Восстановить из копии</span>
+        <input type="file" id="footerFileInput" style="display:none" accept=".json">
+    `;
+    footer.appendChild(backupDiv);
+    
+    document.getElementById('importDataLink').onclick = () => {
+        document.getElementById('footerFileInput').click();
+    };
+    document.getElementById('footerFileInput').onchange = (e) => {
+        if (e.target.files.length > 0) {
+            importDatabase(e.target.files[0]);
+        }
+        e.target.value = '';
+    };
+}
+
+// Добавляем кнопку в профиль пользователя (рядом с "Выйти")
+function addBackupButtonToUserArea() {
+    const userArea = document.querySelector('.user-area');
+    if (!userArea) return;
+    
+    if (document.getElementById('userBackupBtn')) return;
+    
+    const backupBtn = document.createElement('button');
+    backupBtn.id = 'userBackupBtn';
+    backupBtn.className = 'auth-btn';
+    backupBtn.style.background = 'var(--accent-teal)';
+    backupBtn.style.marginLeft = '0.5rem';
+    backupBtn.innerHTML = '💾 Сохранить данные';
+    backupBtn.onclick = exportDatabase;
+    backupBtn.title = 'Сохранить всех пользователей и отзывы в файл';
+    
+    const logoutBtn = document.getElementById('logoutBtn');
+    if (logoutBtn) {
+        logoutBtn.parentNode.insertBefore(backupBtn, logoutBtn.nextSibling);
+    } else {
+        userArea.appendChild(backupBtn);
+    }
+}
+
+// Перехватываем открытие админ-панели
+const originalOpenAdminPanel = openAdminPanel;
+if (typeof openAdminPanel === 'function') {
+    window.openAdminPanel = function() {
+        originalOpenAdminPanel();
+        addDatabaseButtonsToAdmin();
+    };
+}
+
+// Запускаем добавление кнопок при загрузке страницы
+setTimeout(() => {
+    addDatabaseButtonsToFooter();
+    addBackupButtonToUserArea();
+}, 500);
